@@ -2,12 +2,17 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
+class User(AbstractUser):
+    solutions = models.ManyToManyField('Solutions', blank=True)
+    telegram_name = models.CharField(max_length=100, blank=True)
+
+
 class Course(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
     image = models.ImageField(upload_to='photo/')
     date = models.DateField(auto_now_add=True)
-    pupils = models.ForeignKey('User', on_delete=models.CASCADE)
+    pupils = models.ManyToManyField(User, blank=True)
     category = models.ForeignKey('Subcategories', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -42,15 +47,8 @@ class Subcategories(models.Model):
         verbose_name_plural = 'Подкатегории'
 
 
-class User(AbstractUser):
-    solutions = models.ForeignKey('Solution', models.CASCADE, blank=True)
-    reiting = models.ForeignKey('Reiting', on_delete=models.CASCADE, blank=True)
-    telegram_name = models.CharField(max_length=100, blank=True)
-
-
 class Solutions(models.Model):
     task = models.ForeignKey('Tasks', on_delete=models.CASCADE)
-    id_User = models.ForeignKey(User, on_delete=models.CASCADE)
     solution = models.TextField(blank=True)
     solutBool = models.BooleanField(default=False)
 
@@ -66,7 +64,7 @@ class Tasks(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
     solution = models.TextField()
-    image = models.ImageField(upload_to='tasks/')
+    image = models.ImageField(upload_to='tasks/', blank=True)
     date = models.DateTimeField(auto_now_add=True)
     pub_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -86,7 +84,7 @@ class Theory(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='theory')
+    image = models.ImageField(upload_to='theory', blank=True)
     date = models.DateField(auto_now_add=True)
     pub_date = models.DateField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -159,11 +157,11 @@ class Complaints(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ['-date']
 
 
 class Reiting(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.PROTECT)
     reit = models.IntegerField()
 
     def __str__(self):
